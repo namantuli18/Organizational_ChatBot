@@ -7,6 +7,13 @@ import tflearn
 import tensorflow
 import random
 import json
+import pyttsx3
+def tts(txt):
+	engine=pyttsx3.init()
+	engine.say(txt)
+	engine.runAndWait()
+
+
 try:
 	with open('data.pickle','rb') as f:
 		words,labels,training,output=pickle.load(f)
@@ -74,8 +81,9 @@ model=tflearn.DNN(net,tensorboard_dir='log')
 #except:
 model.fit(training,output,n_epoch=1500,batch_size=8,show_metric=True)
 model.save('chat.tflearn')
-
-
+'''
+with open('model.pickle','wb') as f:
+	pickle.dump(model,f)'''
 def bag_of_words(s,words):
 	bag=[0 for _ in range(len(words))]
 	s_words=nltk.word_tokenize(s)
@@ -96,7 +104,7 @@ def chat():
 		results=model.predict([bag_of_words(inp,words)])[0]
 		results_idx=numpy.argmax(results)
 
-		if results[results_idx]>0.5:
+		if results[results_idx]>0.3:
 
 			tag=labels[results_idx]
 			with open('intents.json') as file:
@@ -106,6 +114,8 @@ def chat():
 			for trunc in data['intents']:
 				if trunc['tag']==tag:
 					responses=trunc['responses']
-			print(random.choices(responses))
+			txt=random.choices(responses)
+			print(txt[0])
+			print(tts(txt))
 		else: print('Did not comprehend.Try again')
 chat()
